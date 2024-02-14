@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-column vh-100">
+   <nav class="navbar navbar-expand-lg ">
+      <div class="container-fluid">
+         <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
+         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+         </button>
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            
+            <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
+               <button class="btn btn-outline-danger form-control" type="submit">Logout</button>
+            </form>
+         </div>
+      </div>
+   </nav>
+
+   {% for category, message in get_flashed_messages(with_categories = true) %}
+   {% if category == "error" %}
+   <div class="alert alert-danger">
+      {{ message }}
+   </div>
+   {% endif %}
+   {% if category == "success" %}
+   <div class="alert alert-success">
+      {{ message }}
+   </div>
+   {% endif %}
+   {% endfor %}
+
+   <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
+      {% if listings %}
+      <div class="row mx-2 my-3">
+         <h3 class="m-2">Latest shows</h3>
+         <div class="d-flex flex-wrap">
+            {% for show, venue in latest %}
+            <div class="card m-2" style="min-width: 12rem; max-width: 18rem;">
+               {% if show.image %}
+               <img class="card-img-top" src="#>
+               {% else %}
+               <h3 class="text-center m-3">No image</h3>
+               {% endif %}
+               <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                     <h3>{{ show.name }}</h3>
+                     <p class="card-text text-muted">{{ show.start_time }} - {{ show.end_time }}</p>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-start">
+                     <p class="card-text text-muted">{{ venue.name }}</p>
+                     <p class="card-text text-muted">
+                        {% for tag in show.tags %}
+                        {{ tag.name }}
+                        {% endfor %}
+                     </p>
+                  </div>
+
+                  <a class="btn btn-primary m-2" href="#>Book
+                     tickets</a>
+               </div>
+            </div>
+            {% endfor %}
+         </div>
+      </div>
+      {% for venue in listings.keys() %}
+      <div class="row mx-2 my-3">
+         <h3 class="m-2">{{ venue.name }}</h3>
+         <p class="text-muted m-2">{{ venue.location }} {{ venue.capacity }}</p>
+         <div class="d-flex flex-wrap">
+            {% for show in listings[venue] %}
+            <div class="card m-2" style="min-width: 12rem; max-width: 18rem;">
+               <img class="card-img-top" src="#
+                  alt="Card image cap">
+               <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                     <h3>{{ show.name }}</h3>
+                     <p class="card-text text-muted">{{ show.start_time }} - {{ show.end_time }}</p>
+                  </div>
+                  <p class="card-text text-muted">
+                     {% for tag in show.tags %}
+                     {{ tag.name }}
+                     {% endfor %}
+                  </p>
+                  <a class="btn btn-primary m-2" href="#>Book
+                     tickets</a>
+               </div>
+            </div>
+            {% endfor %}
+         </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <h3 class="m-3">No Sections Found.</h3>
+      {% endif %}
+   </div>
+</div>
+{% endblock %}

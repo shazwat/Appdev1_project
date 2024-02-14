@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex flex-column vh-100">
+    <nav class="navbar ">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Kitaab</a>
+        </div>
+    </nav>
+
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1">
+        <div class="card" style="width: 20rem;">
+            <h3 class="card-header">{{ message }}</h3>
+            <div class="card-body">
+                <form action="{{ request.path }}" method="post">
+                    <div class="m-3 text-center">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="yes" name="decision" value="yes">
+                            <label class="form-check-label" for="user">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="no" name="decision" value="no" checked>
+                            <label class="form-check-label" for="admin">No</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary form-control">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

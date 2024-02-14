@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-column vh-100">
+    <nav class="navbar ">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Kitaab</a>
+        </div>
+    </nav>
+
+    <div class="d-flex justify-content-center align-items-start flex-grow-1">
+        <div class="card m-3" style="min-width: 20rem">
+            <h3 class="card-header">Edit Book</h3>
+            <div class="card-body">
+                {% for category, message in get_flashed_messages(with_categories = true) %}
+                {% if category == "error" %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+                {% endif %}
+                {% if category == "success" %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col mx-1" style="min-width: 16rem;">
+                            <div class="my-1">
+                                <label for="book_name" class="form-label">Name</label>
+                                <input type="text" class="form-control" value="{{ book.book_name }}" name="book_name">
+                            </div>
+                            <div class="my-1">
+                                <label for="author" class="form-label">Author</label>
+                                <input type="text" class="form-control" value="{{ book.author }}" name="author">
+                            </div>
+                            
+                            <div class="my-1">
+                                <label for="price" class="form-label">Price</label>
+                                <input type="number" class="form-control" min="0" max="200000" value="{{ book.price }}" name="price">
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <input class="form-control" type="file" id="content" , name="content">
+                            </div>
+                            <div class="mb-3">
+                                <label for="cover" class="form-label">Cover</label>
+                                <input class="form-control" type="file" id="cover" , name="cover">
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="row mx-1 my-3">
+                        <button type="submit" class="btn btn-primary form-control">Update</button>
+                        <a class="btn btn-danger my-2" href="{{ url_for('home_admin') }}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
