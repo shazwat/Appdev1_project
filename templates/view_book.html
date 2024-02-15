@@ -1,0 +1,73 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="d-flex flex-column vh-100">
+  <nav class="navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Kitaab</a>
+    </div>
+  </nav>
+
+  <div class="container h-100">
+    <div class="row h-100">
+      <div
+        class="col-sm d-flex flex-column align-items-center justify-content-center"
+        style="min-width: 16rem"
+      >
+        <img
+          class="img-fluid w-75 m-2"
+          src="{{ url_for('static', filename='uploads/covers/'+book.cover ) }}"
+          alt="{{ book.book_name }}"
+        />
+      </div>
+      <div class="col-sm d-flex justify-content-center flex-column">
+        <div
+          class="d-flex flex-column align-items-start justify-content-center m-2"
+        >
+          <div
+            class="container-fluid d-flex align-items-start justify-content-between"
+          >
+            <div>
+              <h1>{{ book.book_name }}</h1>
+            </div>
+            <h6 class="m-3 text-muted">{{ book.author }}</h6>
+          </div>
+        </div>
+        <div class="card m-2">
+          <h3 class="card-header">Request Book</h3>
+          <div class="card-body">
+            {% for category, message in get_flashed_messages(with_categories =
+            true) %} {% if category == "error" %}
+            <div class="alert alert-danger">{{ message }}</div>
+            {% endif %} {% if category == "success" %}
+            <div class="alert alert-success">{{ message }}</div>
+            {% endif %} {% endfor %}
+            <form action="{{ request.path }}" method="post">
+              <div class="mb-3">
+                <label for="number_of_days" class="form-label"
+                  >Number of days</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="number_of_days"
+                  min="0"
+                  max="15"
+                />
+              </div>
+
+              <button type="submit" class="btn btn-primary form-control">
+                Request Book
+              </button>
+              <a
+                class="btn btn-danger my-2 form-control"
+                href="{{ url_for('home') }}"
+                >Cancel</a
+              >
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

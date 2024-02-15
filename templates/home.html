@@ -1,98 +1,107 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="d-flex flex-column vh-100">
-   <nav class="navbar navbar-expand-lg ">
-      <div class="container-fluid">
-         <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
-         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-         </button>
-         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            
-            <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
-               <button class="btn btn-outline-danger form-control" type="submit">Logout</button>
-            </form>
-         </div>
+  <nav class="navbar navbar-expand-lg navbar-nav">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon color-toggle"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+        </ul>
+        <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
+          <button class="btn btn-outline-danger form-control" type="submit">
+            Logout
+          </button>
+        </form>
       </div>
-   </nav>
+    </div>
+  </nav>
 
-   {% for category, message in get_flashed_messages(with_categories = true) %}
-   {% if category == "error" %}
-   <div class="alert alert-danger">
-      {{ message }}
-   </div>
-   {% endif %}
-   {% if category == "success" %}
-   <div class="alert alert-success">
-      {{ message }}
-   </div>
-   {% endif %}
-   {% endfor %}
+  {% for category, message in get_flashed_messages(with_categories = true) %} {%
+  if category == "error" %}
+  <div class="alert alert-danger">{{ message }}</div>
+  {% endif %} {% if category == "success" %}
+  <div class="alert alert-success">{{ message }}</div>
+  {% endif %} {% endfor %}
 
-   <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
-      {% if listings %}
-      <div class="row mx-2 my-3">
-         <h3 class="m-2">Latest shows</h3>
-         <div class="d-flex flex-wrap">
-            {% for show, venue in latest %}
-            <div class="card m-2" style="min-width: 12rem; max-width: 18rem;">
-               {% if show.image %}
-               <img class="card-img-top" src="#>
-               {% else %}
-               <h3 class="text-center m-3">No image</h3>
-               {% endif %}
-               <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                     <h3>{{ show.name }}</h3>
-                     <p class="card-text text-muted">{{ show.start_time }} - {{ show.end_time }}</p>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-start">
-                     <p class="card-text text-muted">{{ venue.name }}</p>
-                     <p class="card-text text-muted">
-                        {% for tag in show.tags %}
-                        {{ tag.name }}
-                        {% endfor %}
-                     </p>
-                  </div>
-
-                  <a class="btn btn-primary m-2" href="#>Book
-                     tickets</a>
-               </div>
+  <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
+    {% if section_list %} {% for section in section_list.keys() %}
+    <div class="row mx-2 my-3">
+      <h3 class="m-2">{{ section.section_name }}</h3>
+      <p class="m-2">{{ section.description }} {{ section.date_created }}</p>
+      <div class="d-flex align-items-start flex-wrap">
+        <button
+          class="btn btn-secondary m-2"
+          onclick="myFunction(event)"
+          data-section-id="{{ section.section_id }}"
+        >
+          Show/Hide Section
+        </button>
+      </div>
+      <div class="d-flex flex-wrap">
+        {% for book in section_list[section] %}
+        <div
+          class="card m-2 cl{{ section.section_id }}"
+          style="min-width: 12rem; max-width: 12rem; display: none"
+        >
+          {% if book.cover %}
+          <img
+            class="card-img-top"
+            src="{{ url_for('static', filename='uploads/covers/'+book.cover ) }}"
+          />
+          {% else %}
+          <h3 class="text-center m-3">No image</h3>
+          {% endif %}
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <h4>{{ book.book_name }}</h4>
             </div>
-            {% endfor %}
-         </div>
-      </div>
-      {% for venue in listings.keys() %}
-      <div class="row mx-2 my-3">
-         <h3 class="m-2">{{ venue.name }}</h3>
-         <p class="text-muted m-2">{{ venue.location }} {{ venue.capacity }}</p>
-         <div class="d-flex flex-wrap">
-            {% for show in listings[venue] %}
-            <div class="card m-2" style="min-width: 12rem; max-width: 18rem;">
-               <img class="card-img-top" src="#
-                  alt="Card image cap">
-               <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                     <h3>{{ show.name }}</h3>
-                     <p class="card-text text-muted">{{ show.start_time }} - {{ show.end_time }}</p>
-                  </div>
-                  <p class="card-text text-muted">
-                     {% for tag in show.tags %}
-                     {{ tag.name }}
-                     {% endfor %}
-                  </p>
-                  <a class="btn btn-primary m-2" href="#>Book
-                     tickets</a>
-               </div>
+            <p class="card-text text-muted">{{ book.author }}<br /></p>
+            <div class="d-flex flex-wrap">
+              <a
+                class="btn btn-primary m-2"
+                href="{{ url_for('view_book', book_id=book.book_id) }}"
+                >View Book</a
+              >
             </div>
-            {% endfor %}
-         </div>
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-      {% else %}
-      <h3 class="m-3">No Sections Found.</h3>
-      {% endif %}
-   </div>
+    </div>
+    {% endfor %} {% else %}
+    <h3 class="m-3">No Sections Found.</h3>
+    {% endif %}
+  </div>
 </div>
+<script>
+  function myFunction(event) {
+    console.log("works");
+    let id = event.target.dataset.sectionId;
+    console.log(event);
+    console.log(id);
+
+    let elements = document.querySelectorAll(".cl" + id);
+    for (element of elements) {
+      console.log(element);
+      if (element.style.display === "none") {
+        element.style.display = "block";
+      } else {
+        element.style.display = "none";
+      }
+    }
+  }
+</script>
 {% endblock %}

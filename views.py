@@ -28,7 +28,18 @@ def home():
         logout_user()
         return redirect(url_for('login'))
     if request.method == 'GET':
-        return render_template('home.html')
+        user = current_user
+        if user.role != 'user':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            try:
+                sections = db.session.scalars(db.select(Section)).all()
+                section_list = {}
+                for s in sections:
+                    section_list[s] = s.books
+            except:
+                section_list = {}
+            return render_template('home.html', section_list=section_list)
 
 
 @app.route('/home_admin', methods=['GET', 'POST'])
@@ -302,6 +313,7 @@ def edit_book(book_id):
         flash("Successfully updated book", 'success')
         return redirect(url_for('home_admin'))
 
+
 @app.route('/delete_book/<book_id>', methods=['GET', 'POST'])
 @login_required
 def delete_book(book_id):
@@ -321,8 +333,37 @@ def delete_book(book_id):
         if request.form['decision'] == 'yes':
             db.session.delete(book)
             db.session.commit()
-            
+
             flash('Book was successfully deleted', 'success')
             return redirect(url_for('home_admin'))
         else:
             return redirect(url_for('home_admin'))
+
+
+@app.route('/view_book/<book_id>', methods=['GET', 'POST'])
+@login_required
+def view_book(book_id):
+    try:
+        book = db.session.scalars(
+            db.select(Book).where(Book.book_id == book_id)).one()
+    except Exception as e:
+        print(e)
+        flash("No book found", "error")
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        user = current_user
+        number_of_days = request.form['number_of_days']
+        date_requested = datetime.now(timezone.utc)
+        borrowing = Borrowing(user.user_id, book_id,
+                              date_requested, number_of_days)
+        db.session.add(borrowing)
+        db.session.commit()
+        flash("Book Request Submitted", 'success')
+        return redirect(url_for('home'))
+
+    if request.method == 'GET':
+        user = current_user
+        if user.role != 'user':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            return render_template('view_book.html', book=book)
