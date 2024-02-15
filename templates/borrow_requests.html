@@ -1,0 +1,94 @@
+{% extends "base.html" %} {% block content %}
+<div class="d-flex flex-column vh-100">
+  <nav class="navbar navbar-expand-lg navbar-nav">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home_admin') }}">Kitaab</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon color-toggle"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home_admin') }}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('add_section') }}"
+              >Add Section</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active border" aria-current="page" href="#"
+              >Borrow Requests</a
+            >
+          </li>
+        </ul>
+        <form
+          class="d-flex m-2"
+          action="{{ url_for('home_admin') }}"
+          method="post"
+        >
+          <button class="btn btn-outline-danger form-control" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  {% for category, message in get_flashed_messages(with_categories = true) %} {%
+  if category == "error" %}
+  <div class="alert alert-danger">{{ message }}</div>
+  {% endif %} {% if category == "success" %}
+  <div class="alert alert-success">{{ message }}</div>
+  {% endif %} {% endfor %}
+
+  <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
+    {% if borrowings %}
+    <table class="table table-bordered table-dark">
+      <tr>
+        <th>Book Name</th>
+        <th>Email</th>
+        <th>Days Requested</th>
+        <th>Actions</th>
+      </tr>
+      {% for borrowing in borrowings %}
+      {% if borrowing[0].status == 'PENDING' %}
+      <tr>
+        <td>{{ borrowing[2].book_name }}</td>
+        <td>{{ borrowing[1].email }}</td>
+        <td>{{ borrowing[0].number_of_days }}</td>
+        <td>
+        <form action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'APPROVED') }}" method="post">
+          <input type="submit" class="btn btn-success m-2" href="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'APPROVED') }}" value="Approve">
+        </form>
+        <form action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'DENIED') }}" method="post">
+          <input type="submit" class="btn btn-danger m-2" href="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'DENIED') }}" value="Deny">
+        </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td>{{ borrowing[2].book_name }}</td>
+        <td>{{ borrowing[1].email }}</td>
+        <td>{{ borrowing[0].number_of_days }}</td>
+        <td>{{ borrowing[0].status }}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </table>
+
+    {% else %}
+    <h3 class="m-3">No Requests.</h3>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

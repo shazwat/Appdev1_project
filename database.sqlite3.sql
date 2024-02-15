@@ -11,11 +11,16 @@ CREATE TABLE IF NOT EXISTS "book" (
 	FOREIGN KEY("section_id") REFERENCES "section"("section_id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "borrowing" (
-	"user_id"	INTEGER NOT NULL,
-	"book_id"	INTEGER NOT NULL,
+	"borrowing_id"	INTEGER NOT NULL,
+	"user_id"	INTEGER,
+	"book_id"	INTEGER,
+	"approved"	VARCHAR(20),
+	"date_requested"	DATETIME,
 	"date_issued"	DATETIME,
+	"number_of_days"	INTEGER,
 	"return_date"	DATETIME,
-	PRIMARY KEY("user_id","book_id"),
+	"returned"	BOOLEAN,
+	PRIMARY KEY("borrowing_id"),
 	FOREIGN KEY("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE,
 	FOREIGN KEY("book_id") REFERENCES "book"("book_id") ON DELETE CASCADE
 );
@@ -68,4 +73,5 @@ INSERT INTO "section" VALUES (8,'Anthropology','Study of humans, culture and evo
 INSERT INTO "section" VALUES (9,'Fiction','Captivation fictional stories','2024-02-13 21:43:28.452077');
 INSERT INTO "user" VALUES (1,'admin','admin','admin@kitaab.com','sha256$rkhTPeCKYvPSU83W$02ac3146fb695d55236d4c0236e89fd98b69dafedb84da54802e1d1aa08be06a',0,0);
 INSERT INTO "user" VALUES (2,'user1','user','user1@kitaab.com','sha256$iW5PKPE1cNu6D3T3$1d33912991b592d070ed95a07b64caf0bd4b52cbc3e3a621c6116cfea137afc0',0,0);
+INSERT INTO "user" VALUES (3,'User2','user','user2@kitaab.com','sha256$yf0pUDPYPILrYYgU$f28e538a3d026db01f5e440db5e96ad6b5d5b3d5459aeb97dd084f90436bdd99',0,0);
 COMMIT;

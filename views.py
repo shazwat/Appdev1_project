@@ -340,6 +340,30 @@ def delete_book(book_id):
             return redirect(url_for('home_admin'))
 
 
+@app.route('/borrow_requests', methods=['GET'])
+@login_required
+def borrow_requests():
+    user = current_user
+    if user.role != 'admin':
+        return render_template('error.html', message="Not Authorised")
+    else:
+        borrowings = db.session.execute(db.select(Borrowing, User, Book).join(User).join(Book).where(
+            (Borrowing.user_id == User.user_id) & (Borrowing.book_id == Book.book_id))).all()
+        return render_template('borrow_requests.html', borrowings=borrowings)
+
+
+@app.route('/borrow_requests/<borrowing_id>/<status>', methods=['POST'])
+@login_required
+def borrow_requests_status(borrowing_id, status):
+    borrowing = db.session.scalars(db.select(Borrowing).where(
+        Borrowing.borrowing_id == borrowing_id)).one()
+    borrowing.status = status
+    db.session.commit()
+    return redirect(url_for('borrow_requests'))
+
+# USER CODE
+
+
 @app.route('/view_book/<book_id>', methods=['GET', 'POST'])
 @login_required
 def view_book(book_id):
@@ -367,3 +391,32 @@ def view_book(book_id):
             return render_template('error.html', message="Not Authorised")
         else:
             return render_template('view_book.html', book=book)
+
+@app.route('/borrowings', methods=['GET'])
+@login_required
+def borrowings():
+    user = current_user
+    if user.role != 'user':
+        return render_template('error.html', message="Not Authorised")
+    else:
+        borrowings = db.session.execute(db.select(Borrowing, User, Book).join(User).join(Book).where(
+            (Borrowing.user_id == user.user_id) & (Borrowing.book_id == Book.book_id))).all()
+        print(borrowings)
+        return render_template('borrowings.html', borrowings=borrowings)
+    
+@app.route('/view_borrowed_book/<book_id>', methods=['GET', 'POST'])
+@login_required
+def view_borrowed_book(book_id):
+    try:
+        book = db.session.scalars(
+            db.select(Book).where(Book.book_id == book_id)).one()
+    except Exception as e:
+        flash("No book found", "error")
+        return redirect(url_for('home'))
+
+    if request.method == 'GET':
+        user = current_user
+        if user.role != 'user':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            return render_template('view_borrowed_book.html', book=book)

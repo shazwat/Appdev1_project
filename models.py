@@ -85,18 +85,19 @@ class Rating(db.Model):
 
 class Borrowing(db.Model):
     __tablename__ = "borrowing"
+    borrowing_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(
-        'user.user_id', ondelete="CASCADE"), primary_key=True)
+        'user.user_id', ondelete="CASCADE"))
     book_id = db.Column(db.Integer, db.ForeignKey(
-        'book.book_id', ondelete="CASCADE"), primary_key=True)
-    granted = db.Column(db.Boolean, default=False)
+        'book.book_id', ondelete="CASCADE"))
+    status = db.Column(db.String(20))
     date_requested = db.Column(db.DateTime)
     date_issued = db.Column(db.DateTime)
     number_of_days = db.Column(db.Integer)
     return_date = db.Column(db.DateTime)
     returned = db.Column(db.Boolean, default=False)
 
-    def __init__(self, user_id, book_id, date_requested, number_of_days, return_date=None, date_issued=None, returned=False, granted=False):
+    def __init__(self, user_id, book_id, date_requested, number_of_days, return_date=None, date_issued=None, returned=False, status='PENDING'):
         self.user_id = user_id
         self.book_id = book_id
         self.date_requested = date_requested
@@ -104,4 +105,4 @@ class Borrowing(db.Model):
         self.date_issued = date_issued
         self.return_date = return_date
         self.returned = returned
-        self.granted = granted
+        self.status = status
