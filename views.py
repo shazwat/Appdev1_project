@@ -8,6 +8,7 @@ from models import *
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, redirect, render_template, request, url_for
+
 app = create_app()
 
 
@@ -361,6 +362,42 @@ def borrow_requests_status(borrowing_id, status):
     db.session.commit()
     return redirect(url_for('borrow_requests'))
 
+
+@app.route('/search_admin', methods=['GET', 'POST'])
+@login_required
+def search_admin():
+    if request.method == 'POST':
+        search_term = request.form["search_term"]
+        if search_term == '':
+            flash('Please type a search term', 'error')
+            return render_template('search_admin.html', result=[])
+        if 'filter' not in request.form:
+            flash('Please choose a category to search in', 'error')
+            return render_template('search_admin.html', result=[])
+        filter = request.form['filter']
+        search = "%{}%".format(search_term)
+        result = []
+        if filter == 'author':
+            result = db.session.scalars(db.select(Book).where(Book.author.like(search))).all()
+            print(result)
+
+        if filter == 'name':
+            result = db.session.scalars(db.select(Book).where(Book.book_name.like(search))).all()
+            print(result)
+
+        if filter == 'section':
+            result = db.session.scalars(db.select(Section).where(Section.section_name.like(search))).all()
+            print(result)
+
+        return render_template('search_admin.html', result=result, filter=filter)
+
+    if request.method == 'GET':
+        user = current_user
+        if user.role != 'admin':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            return render_template('search_admin.html', result=[])
+
 # USER CODE
 
 
@@ -374,6 +411,7 @@ def view_book(book_id):
         print(e)
         flash("No book found", "error")
         return redirect(url_for('home'))
+    
     if request.method == 'POST':
         user = current_user
         number_of_days = request.form['number_of_days']
@@ -387,10 +425,18 @@ def view_book(book_id):
 
     if request.method == 'GET':
         user = current_user
+        
         if user.role != 'user':
             return render_template('error.html', message="Not Authorised")
         else:
-            return render_template('view_book.html', book=book)
+            try:
+                borrowing = db.session.scalars(db.select(Borrowing).where((Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id))).one()
+                flag = True
+                
+            except Exception as e:
+                print(e)
+                flag = False
+            return render_template('view_book.html', book=book, flag=flag)
 
 @app.route('/borrowings', methods=['GET'])
 @login_required
@@ -420,3 +466,38 @@ def view_borrowed_book(book_id):
             return render_template('error.html', message="Not Authorised")
         else:
             return render_template('view_borrowed_book.html', book=book)
+        
+@app.route('/search', methods=['GET', 'POST'])
+@login_required
+def search():
+    if request.method == 'POST':
+        search_term = request.form["search_term"]
+        if search_term == '':
+            flash('Please type a search term', 'error')
+            return render_template('search.html', result=[])
+        if 'filter' not in request.form:
+            flash('Please choose a category to search in', 'error')
+            return render_template('search.html', result=[])
+        filter = request.form['filter']
+        search = "%{}%".format(search_term)
+        result = []
+        if filter == 'author':
+            result = db.session.scalars(db.select(Book).where(Book.author.like(search))).all()
+            print(result)
+
+        if filter == 'name':
+            result = db.session.scalars(db.select(Book).where(Book.book_name.like(search))).all()
+            print(result)
+
+        if filter == 'section':
+            result = db.session.scalars(db.select(Book).join(Section).where((Book.section_id == Section.section_id) & (Section.section_name.like(search)))).all()
+            print(result)
+
+        return render_template('search.html', result=result, filter=filter, search_term = search_term)
+
+    if request.method == 'GET':
+        user = current_user
+        if user.role != 'user':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            return render_template('search.html', result=[])

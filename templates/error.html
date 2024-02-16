@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex flex-column vh-100">
+    <nav class="navbar bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Kitaab</a>
+        </div>
+    </nav>
+
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1">
+        <div class="card" style="width: 20rem;">
+            <h3 class="card-header">Error</h3>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

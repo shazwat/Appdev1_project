@@ -1,9 +1,37 @@
 {% extends "base.html" %} {% block content %}
 
 <div class="d-flex flex-column vh-100">
-  <nav class="navbar">
+  <nav class="navbar navbar-expand-lg navbar-nav">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Kitaab</a>
+      <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon color-toggle"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item m-2">
+            <a
+              class="nav-link active border rounded form-control text-center"
+              href="{{ url_for('home') }}"
+              >Go Back</a
+            >
+          </li>
+        </ul>
+  
+        <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
+          <button class="btn btn-outline-danger form-control" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
     </div>
   </nav>
 
@@ -29,7 +57,7 @@
             <div>
               <h1>{{ book.book_name }}</h1>
             </div>
-            <h6 class="m-3 text-muted">{{ book.author }}</h6>
+            <h6 class="m-3">{{ book.author }}</h6>
           </div>
         </div>
         <div class="card m-2">
@@ -42,6 +70,10 @@
             <div class="alert alert-success">{{ message }}</div>
             {% endif %} {% endfor %}
             <form action="{{ request.path }}" method="post">
+              {% if flag == True %}
+
+              <p>Book Already Borrowed</p>
+              {% else %}
               <div class="mb-3">
                 <label for="number_of_days" class="form-label"
                   >Number of days</label
@@ -54,10 +86,10 @@
                   max="15"
                 />
               </div>
-
               <button type="submit" class="btn btn-primary form-control">
                 Request Book
               </button>
+              {% endif %}
               <a
                 class="btn btn-danger my-2 form-control"
                 href="{{ url_for('home') }}"

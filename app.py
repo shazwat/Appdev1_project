@@ -2,6 +2,7 @@ from models import db
 from flask import Flask
 from flask_login import LoginManager
 
+
 UPLOAD_FOLDER_COVER = './static/uploads/covers'
 UPLOAD_FOLDER_CONTENT = './static/uploads/content'
 

@@ -1,0 +1,172 @@
+{% extends "base.html" %} {% block content %}
+<div class="d-flex flex-column vh-100">
+  <nav class="navbar navbar-expand-lg navbar-nav">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home_admin') }}">Kitaab</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon color-toggle"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home_admin') }}"
+              >Home</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('add_section')}}"
+              >Add Section</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('borrow_requests')}}"
+              >Borrow Requests</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active border rounded" aria-current="page" href="#"
+              >Search</a
+            >
+          </li>
+        </ul>
+        <form
+          class="d-flex m-2"
+          action="{{ url_for('home_admin') }}"
+          method="post"
+        >
+          <button class="btn btn-outline-danger form-control" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  {% for category, message in get_flashed_messages(with_categories = true) %} {%
+  if category == "error" %}
+  <div class="alert alert-danger">{{ message }}</div>
+  {% endif %} {% if category == "success" %}
+  <div class="alert alert-success">{{ message }}</div>
+  {% endif %} {% endfor %}
+  <div class="container">
+    <form action="{{ request.path }}" method="post">
+      <div class="d-flex">
+        <input
+          type="text"
+          class="form-control my-3 mx-2"
+          name="search_term"
+          placeholder="Search"
+        />
+        <button type="submit" class="btn btn-primary my-3 mx-2">Search</button>
+      </div>
+      <div class="d-flex flex-wrap my-1">
+        <div class="form-check mx-2 inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="filter"
+            value="author"
+            id="author"
+          />
+          <label class="form-check-label" for="author">Author</label>
+        </div>
+        <div class="form-check mx-2 inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="filter"
+            value="name"
+            id="name"
+          />
+          <label class="form-check-label" for="name">Book Name</label>
+        </div>
+        <div class="form-check mx-2 inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="filter"
+            value="section"
+            id="section"
+          />
+          <label class="form-check-label" for="section">Section</label>
+        </div>
+      </div>
+    </form>
+    {% if result %} {% if filter=='section' %}
+    <div class="m-3" style="overflow-x: scroll">
+      <table class="table table-bordered">
+        <tr>
+          <th>Section Name</th>
+          <th>Description</th>
+          <th>Date Created</th>
+          <th>Actions</th>
+        </tr>
+        {% for res in result %}
+        <tr>
+          <td>{{ res.section_name }}</td>
+          <td>{{ res.description }}</td>
+          <td>{{ res.date_created }}</td>
+
+          <td>
+            <a
+              class="btn btn-primary m-2"
+              href="{{ url_for('edit_section', section_id=res.section_id) }}"
+              >Edit Section</a
+            >
+            <a
+              class="btn btn-danger m-2"
+              href="{{ url_for('delete_section', section_id=res.section_id) }}"
+              >Delete Section</a
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% else %}
+    <div class="m-3" style="overflow-x: scroll">
+      <table class="table table-bordered">
+        <tr>
+          <th>Book Name</th>
+          <th>Author</th>
+          <th>Section</th>
+
+          <th>Actions</th>
+        </tr>
+        {% for res in result %}
+        <tr>
+          <td>{{ res.book_name }}</td>
+          <td>{{ res.author }}</td>
+          <td>{{ res.section.section_name }}</td>
+
+          <td>
+            <a
+              class="btn btn-primary m-2"
+              href="{{ url_for('edit_book', book_id=res.book_id) }}"
+              >Edit Book</a
+            >
+            <a
+              class="btn btn-danger m-2"
+              href="{{ url_for('delete_book', book_id=res.book_id) }}"
+              >Delete Book</a
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %} 
+    {% else %}
+    <h3 class="m-2">No Results Found</h3>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

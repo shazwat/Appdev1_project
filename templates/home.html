@@ -24,6 +24,11 @@
               >Borrowings</a
             >
           </li>
+          <li class="nav-item m-2">
+            <a class="nav-link form-control text-center" href="{{ url_for('search') }}"
+              >Search</a
+            >
+          </li>
         </ul>
         <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
           <button class="btn btn-outline-danger form-control" type="submit">
