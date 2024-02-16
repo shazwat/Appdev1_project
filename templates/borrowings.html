@@ -56,25 +56,39 @@
     <table class="table table-bordered table-dark">
       <tr>
         <th>Book Name</th>
+        <th>Date Requested</th>
         <th>Days Requested</th>
+        <th>Date Returned</th>
         <th>Actions</th>
+
       </tr>
       {% for borrowing in borrowings %}
-      {% if borrowing[0].status != 'PENDING' %}
+      {% if borrowing[0].status == 'APPROVED' %}
       <tr>
         <td>{{ borrowing[2].book_name }}</td>
+        <td>{{ borrowing[0].date_requested.strftime('%d-%m-%Y') }}</td>
         <td>{{ borrowing[0].number_of_days }}</td>
+        <td>N/A</td>
         <td>
         
         <a class="btn btn-success m-2" href="{{ url_for('view_borrowed_book', book_id=borrowing[2].book_id) }}">View</a>
         
-        
+        <form class ="d-inline" action="{{ url_for('borrowings_return', borrowing_id=borrowing[0].borrowing_id) }}" method="post">
+          <input type="submit" class="btn btn-warning m-2" value="Return">
+        </form>
+        <a class="btn btn-primary m-2" href="{{ url_for('rate_book', book_id=borrowing[2].book_id) }}">Rate</a>
         </td>
       </tr>
       {% else %}
       <tr>
         <td>{{ borrowing[2].book_name }}</td>
+        <td>{{ borrowing[0].date_requested.strftime('%d-%m-%Y') }}</td>
         <td>{{ borrowing[0].number_of_days }}</td>
+        {% if borrowing[0].status == 'RETURNED'%}
+        <td>{{ borrowing[0].return_date.strftime('%d-%m-%Y') }}</td>
+        {% else %}
+        <td>N/A</td>
+        {% endif %}
         <td>{{ borrowing[0].status }}</td>
       </tr>
       {% endif %}

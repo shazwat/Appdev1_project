@@ -1,8 +1,9 @@
 import os
 from uuid import uuid4
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import func
 from app import create_app
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from database import db
 from models import *
 from werkzeug.utils import secure_filename
@@ -378,15 +379,18 @@ def search_admin():
         search = "%{}%".format(search_term)
         result = []
         if filter == 'author':
-            result = db.session.scalars(db.select(Book).where(Book.author.like(search))).all()
+            result = db.session.scalars(
+                db.select(Book).where(Book.author.like(search))).all()
             print(result)
 
         if filter == 'name':
-            result = db.session.scalars(db.select(Book).where(Book.book_name.like(search))).all()
+            result = db.session.scalars(db.select(Book).where(
+                Book.book_name.like(search))).all()
             print(result)
 
         if filter == 'section':
-            result = db.session.scalars(db.select(Section).where(Section.section_name.like(search))).all()
+            result = db.session.scalars(db.select(Section).where(
+                Section.section_name.like(search))).all()
             print(result)
 
         return render_template('search_admin.html', result=result, filter=filter)
@@ -411,7 +415,7 @@ def view_book(book_id):
         print(e)
         flash("No book found", "error")
         return redirect(url_for('home'))
-    
+
     if request.method == 'POST':
         user = current_user
         number_of_days = request.form['number_of_days']
@@ -425,18 +429,22 @@ def view_book(book_id):
 
     if request.method == 'GET':
         user = current_user
-        
+
         if user.role != 'user':
             return render_template('error.html', message="Not Authorised")
         else:
+            rating = db.session.scalars(db.select(
+                func.avg(Rating.rating)).where(Rating.book_id == book_id)).one()
             try:
-                borrowing = db.session.scalars(db.select(Borrowing).where((Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id))).one()
+                borrowing = db.session.scalars(db.select(Borrowing).where(
+                    (Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id))).one()
                 flag = True
-                
+
             except Exception as e:
                 print(e)
                 flag = False
-            return render_template('view_book.html', book=book, flag=flag)
+            return render_template('view_book.html', book=book, flag=flag, rating=rating)
+
 
 @app.route('/borrowings', methods=['GET'])
 @login_required
@@ -447,9 +455,29 @@ def borrowings():
     else:
         borrowings = db.session.execute(db.select(Borrowing, User, Book).join(User).join(Book).where(
             (Borrowing.user_id == user.user_id) & (Borrowing.book_id == Book.book_id))).all()
-        print(borrowings)
+
+        for b in borrowings:
+
+            if b[0].status == 'APPROVED' and (b[0].date_requested + timedelta(days=b[0].number_of_days)) <= datetime.utcnow():
+                b[0].status = 'RETURNED'
+                b[0].return_date = datetime.now(timezone.utc)
+        db.session.commit()
+        borrowings = db.session.execute(db.select(Borrowing, User, Book).join(User).join(Book).where(
+            (Borrowing.user_id == user.user_id) & (Borrowing.book_id == Book.book_id))).all()
         return render_template('borrowings.html', borrowings=borrowings)
-    
+
+
+@app.route('/borrowings/<borrowing_id>', methods=['POST'])
+@login_required
+def borrowings_return(borrowing_id):
+    borrowing = db.session.scalars(db.select(Borrowing).where(
+        Borrowing.borrowing_id == borrowing_id)).one()
+    borrowing.status = 'RETURNED'
+    borrowing.return_date = datetime.now(timezone.utc)
+    db.session.commit()
+    return redirect(url_for('borrowings'))
+
+
 @app.route('/view_borrowed_book/<book_id>', methods=['GET', 'POST'])
 @login_required
 def view_borrowed_book(book_id):
@@ -466,7 +494,8 @@ def view_borrowed_book(book_id):
             return render_template('error.html', message="Not Authorised")
         else:
             return render_template('view_borrowed_book.html', book=book)
-        
+
+
 @app.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
@@ -482,18 +511,21 @@ def search():
         search = "%{}%".format(search_term)
         result = []
         if filter == 'author':
-            result = db.session.scalars(db.select(Book).where(Book.author.like(search))).all()
+            result = db.session.scalars(
+                db.select(Book).where(Book.author.like(search))).all()
             print(result)
 
         if filter == 'name':
-            result = db.session.scalars(db.select(Book).where(Book.book_name.like(search))).all()
+            result = db.session.scalars(db.select(Book).where(
+                Book.book_name.like(search))).all()
             print(result)
 
         if filter == 'section':
-            result = db.session.scalars(db.select(Book).join(Section).where((Book.section_id == Section.section_id) & (Section.section_name.like(search)))).all()
+            result = db.session.scalars(db.select(Book).join(Section).where(
+                (Book.section_id == Section.section_id) & (Section.section_name.like(search)))).all()
             print(result)
 
-        return render_template('search.html', result=result, filter=filter, search_term = search_term)
+        return render_template('search.html', result=result, filter=filter, search_term=search_term)
 
     if request.method == 'GET':
         user = current_user
@@ -501,3 +533,35 @@ def search():
             return render_template('error.html', message="Not Authorised")
         else:
             return render_template('search.html', result=[])
+
+
+@app.route('/rate_book/<book_id>', methods=['GET', 'POST'])
+@login_required
+def rate_book(book_id):
+    try:
+        book = db.session.scalars(
+            db.select(Book).where(Book.book_id == book_id)).one()
+    except:
+        flash("No book is associated with that id", "error")
+        return redirect(url_for('home'))
+    if request.method == 'GET':
+        user = current_user
+        if user.role != 'user':
+            return render_template('error.html', message="Not Authorised")
+        else:
+            try:
+                db.session.scalars(db.select(Rating).where(
+                    (Rating.user_id == user.user_id) & (Rating.book_id == book_id))).one()
+                rate = False
+            except Exception as e:
+                rate = True
+            return render_template('rating.html', book=book, rate=rate)
+
+    if request.method == 'POST':
+        user = current_user
+        rating = request.form['rating']
+        new_rating = Rating(book_id, user.user_id, rating)
+        db.session.add(new_rating)
+        db.session.commit()
+        flash('Rating successfully recorded', 'success')
+        return redirect(url_for('borrowings'))

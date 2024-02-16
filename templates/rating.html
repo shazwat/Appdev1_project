@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex flex-column vh-100">
+    <nav class="navbar bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Kitaab</a>
+        </div>
+    </nav>
+
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1">
+        <div class="card" style="width: 20rem;">
+            <h3 class="card-header">{{ book.book_name }}</h3>
+            <div class="card-body">
+                {% if rate %}
+                <form action="{{ request.path }}" method="post">
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <input type="number" class="form-control" name="rating" min="0" max="5">
+                    </div>
+                    <button type="submit" class="btn btn-primary form-control">Submit</button>
+                </form>
+                {% else %}
+                <p>You have already submitted a rating for this book</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

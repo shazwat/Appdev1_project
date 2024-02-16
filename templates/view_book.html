@@ -25,7 +25,7 @@
             >
           </li>
         </ul>
-  
+
         <form class="d-flex m-2" action="{{ url_for('home') }}" method="post">
           <button class="btn btn-outline-danger form-control" type="submit">
             Logout
@@ -58,6 +58,11 @@
               <h1>{{ book.book_name }}</h1>
             </div>
             <h6 class="m-3">{{ book.author }}</h6>
+            {% if rating == None %}
+            <h5 class="my-3">Rating: {{ rating }}</h5>
+            {% else %}
+            <h5 class="my-3">Rating: {{ rating }}/5</h5>
+            {% endif %}
           </div>
         </div>
         <div class="card m-2">
@@ -82,7 +87,7 @@
                   type="number"
                   class="form-control"
                   name="number_of_days"
-                  min="0"
+                  min="1"
                   max="15"
                 />
               </div>
@@ -95,6 +100,7 @@
                 href="{{ url_for('home') }}"
                 >Cancel</a
               >
+              <a class="btn btn-primary m-2" href="{{ url_for('rate_book', book_id=book.book_id) }}">Rate</a>
             </form>
           </div>
         </div>

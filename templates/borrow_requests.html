@@ -74,11 +74,11 @@
         <td>{{ borrowing[0].date_requested.strftime('%d-%m-%Y') }}</td>
         <td>{{ borrowing[0].number_of_days }}</td>
         <td>
-        <form action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'APPROVED') }}" method="post">
-          <input type="submit" class="btn btn-success m-2" href="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'APPROVED') }}" value="Approve">
+        <form class="d-inline" action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'APPROVED') }}" method="post">
+          <input type="submit" class="btn btn-success m-2" value="Approve">
         </form>
-        <form action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'DENIED') }}" method="post">
-          <input type="submit" class="btn btn-danger m-2" href="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'DENIED') }}" value="Deny">
+        <form class="d-inline" action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'DENIED') }}" method="post">
+          <input type="submit" class="btn btn-danger m-2" value="Deny">
         </form>
         </td>
       </tr>
