@@ -82,6 +82,18 @@
         </form>
         </td>
       </tr>
+      {% elif borrowing[0].status == 'APPROVED' %}
+      <tr>
+        <td>{{ borrowing[2].book_name }}</td>
+        <td>{{ borrowing[1].email }}</td>
+        <td>{{ borrowing[0].date_requested.strftime('%d-%m-%Y') }}</td>
+        <td>{{ borrowing[0].number_of_days }}</td>
+        <td>
+        <form class="d-inline" action="{{ url_for('borrow_requests_status', borrowing_id=borrowing[0].borrowing_id, status = 'REVOKED') }}" method="post">
+          <input type="submit" class="btn btn-danger m-2" value="Revoke">
+        </form>
+        </td>
+      </tr>
       {% else %}
       <tr>
         <td>{{ borrowing[2].book_name }}</td>

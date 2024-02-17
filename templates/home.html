@@ -47,6 +47,52 @@
   {% endif %} {% endfor %}
 
   <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
+    {% if latest %}
+    <div class="row mx-2 my-3">
+      <h3 class="m-2">Latest Books</h3>
+      
+      <div class="d-flex align-items-start flex-wrap">
+        <button
+          class="btn btn-secondary m-2"
+          onclick="myFunction(event)"
+          data-section-id="-1"
+        >
+          Show/Hide Section
+        </button>
+      </div>
+      <div class="d-flex flex-wrap">
+        {% for book in latest %}
+        <div
+          class="card m-2 cl-1"
+          style="min-width: 12rem; max-width: 12rem; display: none"
+        >
+          {% if book.cover %}
+          <img
+            class="card-img-top"
+            src="{{ url_for('static', filename='uploads/covers/'+book.cover ) }}"
+          />
+          {% else %}
+          <h3 class="text-center m-3">No image</h3>
+          {% endif %}
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <h4>{{ book.book_name }}</h4>
+            </div>
+            <p class="card-text text-muted">{{ book.author }}<br /></p>
+            <div class="d-flex flex-wrap">
+              <a
+                class="btn btn-primary m-2"
+                href="{{ url_for('view_book', book_id=book.book_id) }}"
+                >View Book</a
+              >
+              <a class="btn btn-primary m-2" href="{{ url_for('rate_book', book_id=book.book_id) }}">Rate</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     {% if section_list %} {% for section in section_list.keys() %}
     <div class="row mx-2 my-3">
       <h3 class="m-2">{{ section.section_name }}</h3>

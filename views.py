@@ -2,6 +2,7 @@ import os
 from uuid import uuid4
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import func
+from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from app import create_app
 from datetime import datetime, timezone, timedelta
 from database import db
@@ -9,6 +10,7 @@ from models import *
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, redirect, render_template, request, url_for
+from email_validator import validate_email, EmailNotValidError
 
 app = create_app()
 
@@ -16,12 +18,13 @@ app = create_app()
 @app.login_manager.user_loader
 def user_loader(user_id):
     try:
-        x = db.session.scalars(db.select(User).where(
-            User.email == user_id)).one()
-        return x
-    except:
+        user = db.session.query(User).filter(User.email == user_id).one()
+        return user
+    except NoResultFound:
         return None
-
+    except Exception as e:
+        app.logger.error(f"An error occurred while loading user : {e}")
+        return None
 
 @app.route('/home', methods=['GET', 'POST'])
 @login_required
@@ -34,14 +37,23 @@ def home():
         if user.role != 'user':
             return render_template('error.html', message="Not Authorised")
         else:
+            section_list = {}
+            latest_books = {}
             try:
-                sections = db.session.scalars(db.select(Section)).all()
-                section_list = {}
+                sections = db.session.query(Section).all()
                 for s in sections:
                     section_list[s] = s.books
-            except:
+            except SQLAlchemyError as e:
                 section_list = {}
-            return render_template('home.html', section_list=section_list)
+                print("Error loading sections and books: ", e)
+            try:
+                latest = db.session.query(Book).order_by(
+                    Book.book_id.desc()).limit(5).all()
+            except SQLAlchemyError as e:
+                latest_books = []
+                print("Error fetching latest books: ", e)
+
+            return render_template('home.html', section_list=section_list, latest_books=latest_books)
 
 
 @app.route('/home_admin', methods=['GET', 'POST'])
@@ -50,18 +62,21 @@ def home_admin():
     if request.method == 'POST':
         logout_user()
         return redirect(url_for('login'))
+    
     if request.method == 'GET':
         user = current_user
         if user.role != 'admin':
             return render_template('error.html', message="Not Authorised")
         else:
             try:
-                sections = db.session.scalars(db.select(Section)).all()
+                sections = db.session.query(Section).all()
                 section_list = {}
                 for s in sections:
                     section_list[s] = s.books
-            except:
+            except SQLAlchemyError as e:
                 section_list = {}
+                app.logger.error(f"Error fetching sections: {str(e)}")
+                
             return render_template('home_admin.html', section_list=section_list)
 
 
@@ -135,20 +150,29 @@ def add_section():
             return render_template('error.html', message="Not Authorized")
         else:
             return render_template('add_section.html')
-    if request.method == 'POST':
+        
+    elif request.method == 'POST':
         if not request.form['section_name'] or not request.form['description']:
             flash('Please enter all the fields', 'error')
-        else:
+            return render_template('add_section.html')
+        
+        try:
+            section = db.session.scalars(db.select(Section).where(Section.section_name == request.form['section_name'])).one()
+
+            flash("Section already exists", 'error')
+        except:
             try:
-                section = db.session.scalars(db.select(Section).where(
-                    Section.section_name == request.form['section_name'])).one()
-                flash("Section already exists", 'error')
-            except:
                 section = Section(
-                    request.form['section_name'], request.form['description'], datetime.now(timezone.utc))
+                    section_name = request.form['section_name'],
+                    description = request.form['description'],
+                    date_created = datetime.now(timezone.utc))
+                
                 db.session.add(section)
                 db.session.commit()
                 flash("Section was successfully added", 'success')
+            except Exception as e:
+                flash("Failed to add section: " + str(e), 'error')
+
         return render_template('add_section.html')
 
 
@@ -357,11 +381,15 @@ def borrow_requests():
 @app.route('/borrow_requests/<borrowing_id>/<status>', methods=['POST'])
 @login_required
 def borrow_requests_status(borrowing_id, status):
-    borrowing = db.session.scalars(db.select(Borrowing).where(
-        Borrowing.borrowing_id == borrowing_id)).one()
-    borrowing.status = status
-    db.session.commit()
-    return redirect(url_for('borrow_requests'))
+    user = current_user
+    if user.role != 'admin':
+        return render_template('error.html', message="Not Authorised")
+    else:
+        borrowing = db.session.scalars(db.select(Borrowing).where(
+            Borrowing.borrowing_id == borrowing_id)).one()
+        borrowing.status = status
+        db.session.commit()
+        return redirect(url_for('borrow_requests'))
 
 
 @app.route('/search_admin', methods=['GET', 'POST'])
@@ -433,16 +461,26 @@ def view_book(book_id):
         if user.role != 'user':
             return render_template('error.html', message="Not Authorised")
         else:
+            flag = 'OK'
             rating = db.session.scalars(db.select(
                 func.avg(Rating.rating)).where(Rating.book_id == book_id)).one()
             try:
                 borrowing = db.session.scalars(db.select(Borrowing).where(
                     (Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id))).one()
-                flag = True
+                flag = 'REQUESTED'
 
             except Exception as e:
                 print(e)
-                flag = False
+
+            try:
+                borrowing = db.session.scalars(db.select(Borrowing).where(
+                    ((Borrowing.status == 'APPROVED') | (Borrowing.status == 'PENDING')) & (Borrowing.user_id == user.user_id))).all()
+                if len(borrowing) == 5:
+                    flag = 'MAXLIMIT'
+
+            except Exception as e:
+                print(e)
+
             return render_template('view_book.html', book=book, flag=flag, rating=rating)
 
 

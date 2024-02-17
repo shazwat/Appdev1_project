@@ -75,9 +75,11 @@
             <div class="alert alert-success">{{ message }}</div>
             {% endif %} {% endfor %}
             <form action="{{ request.path }}" method="post">
-              {% if flag == True %}
+              {% if flag == 'REQUESTED' %}
 
-              <p>Book Already Borrowed</p>
+              <p>Book Already Requested</p>
+              {% elif flag == 'MAXLIMIT' %}
+              <p>You have reached your request limit.</p>
               {% else %}
               <div class="mb-3">
                 <label for="number_of_days" class="form-label"
@@ -101,6 +103,7 @@
                 >Cancel</a
               >
               <a class="btn btn-primary m-2" href="{{ url_for('rate_book', book_id=book.book_id) }}">Rate</a>
+              <a class="btn btn-primary m-2" href="{{ url_for('static', filename='uploads/content/'+ book.content) }}">Buy for ₹{{ book.price }}</a>
             </form>
           </div>
         </div>
