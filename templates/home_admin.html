@@ -2,7 +2,15 @@
 <div class="d-flex flex-column vh-100">
   <nav class="navbar navbar-expand-lg navbar-nav">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('home_admin') }}">Kitaab</a>
+      <a class="navbar-brand" href="{{ url_for('home_admin') }}"
+        ><img
+          src="/static/uploads/Kitaab_logo.svg"
+          width="30"
+          height="30"
+          class="d-inline-block align-top logo-color"
+          alt=""
+        />Kitaab</a
+      >
       <button
         class="navbar-toggler"
         type="button"
@@ -17,7 +25,12 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active border" aria-current="page" href="#">Home</a>
+            <a
+              class="nav-link active border rounded"
+              aria-current="page"
+              href="#"
+              >Home</a
+            >
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('add_section') }}"
@@ -30,9 +43,7 @@
             >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('search_admin') }}"
-              >Search</a
-            >
+            <a class="nav-link" href="{{ url_for('search_admin') }}">Search</a>
           </li>
         </ul>
         <form
@@ -59,12 +70,18 @@
     {% if section_list %} {% for section in section_list.keys() %}
     <div class="row mx-2 my-3">
       <h3 class="m-2">{{ section.section_name }}</h3>
-      <p class="m-2">{{ section.description }} {{ section.date_created }}</p>
+      <h5 class="m-2">{{ section.description }}</h5>
+      <h6 class="m-2">
+        Date Created : {{ section.date_created.strftime('%d-%m-%Y') }}
+      </h6>
       <div class="d-flex align-items-start flex-wrap">
-        <button class="btn btn-secondary m-2"
+        <button
+          class="btn btn-secondary m-2"
           onclick="myFunction(event)"
           data-section-id="{{ section.section_id }}"
-        >Show/Hide Section</button>
+        >
+          Show/Hide Section
+        </button>
         <a
           class="btn btn-warning m-2"
           href="{{ url_for('add_book', section_id=section.section_id) }}"
@@ -85,11 +102,11 @@
         {% for book in section_list[section] %}
         <div
           class="card m-2 cl{{ section.section_id }}"
-          style="min-width: 12rem; max-width: 12rem; display: none"
+          style="min-width: 12rem; max-width: 14rem; display: none"
         >
           {% if book.cover %}
           <img
-            class="card-img-top"
+            class="card-img-top same-height"
             src="{{ url_for('static', filename='uploads/covers/'+book.cover ) }}"
           />
           {% else %}
@@ -103,14 +120,14 @@
               {{ book.author }}<br />
               Price: ₹ {{ book.price }}
             </p>
-            <div class="d-flex flex-wrap">
+            <div class="d-flex flex-wrap mt-auto">
               <a
-                class="btn btn-primary m-2"
+                class="btn btn-primary btn-sm m-1 d-inline"
                 href="{{ url_for('edit_book', book_id = book.book_id)}}"
                 >Edit Book</a
               >
               <a
-                class="btn btn-danger m-2"
+                class="btn btn-danger btn-sm m-1 d-inline"
                 href="{{ url_for('delete_book', book_id=book.book_id)}}"
                 >Delete Book</a
               >

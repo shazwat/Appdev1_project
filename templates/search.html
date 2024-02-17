@@ -101,6 +101,7 @@
         </div>
       </div>
     </form>
+    {% if request.method == 'POST' %}
     {% if result %}
 
     <div class="m-3" style="overflow-x: scroll">
@@ -131,7 +132,7 @@
     </div>
     {% else %}
     <h3 class="m-2">No Results Found</h3>
-    {% endif %}
+    {% endif %} {% endif %}
   </div>
 </div>
 {% endblock %}

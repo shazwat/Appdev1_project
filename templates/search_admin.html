@@ -17,9 +17,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home_admin') }}"
-              >Home</a
-            >
+            <a class="nav-link" href="{{ url_for('home_admin') }}">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url_for('add_section')}}"
@@ -32,7 +30,10 @@
             >
           </li>
           <li class="nav-item">
-            <a class="nav-link active border rounded" aria-current="page" href="#"
+            <a
+              class="nav-link active border rounded"
+              aria-current="page"
+              href="#"
               >Search</a
             >
           </li>
@@ -100,6 +101,7 @@
         </div>
       </div>
     </form>
+    {% if request.method == 'POST' %}
     {% if result %} {% if filter=='section' %}
     <div class="m-3" style="overflow-x: scroll">
       <table class="table table-bordered">
@@ -163,10 +165,9 @@
         {% endfor %}
       </table>
     </div>
-    {% endif %} 
-    {% else %}
+    {% endif %} {% else %}
     <h3 class="m-2">No Results Found</h3>
-    {% endif %}
+    {% endif %} {% endif %}
   </div>
 </div>
 {% endblock %}

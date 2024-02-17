@@ -37,14 +37,18 @@
     <canvas id="pdfCanvas" style="height: 85vh"></canvas>
   </div>
   <div>
-    <button class="btn active border rounded text-center m-1" id="prevPageBtn">Previous Page</button>
-    <button class="btn active border rounded text-center m-1" id="nextPageBtn">Next Page</button>
+    <button class="btn btn-sm active border rounded text-center m-1" id="prevPageBtn">Previous Page</button>
+    <button class="btn btn-sm active border rounded text-center m-1" id="nextPageBtn">Next Page</button>
+    <span id="pageInfo" class="m-1"></span>
+    <input type="number" id="pageNumberInput" class="m-1" placeholder="Go to page">
+    <button class="btn btn-sm active border rounded text-center m-1" id="goToPageBtn">Go</button>
   </div>
 </div>
 
 <script>
   let currentPage = 1;
   let pdfDoc = null;
+  let totalPages = 0;
 
   // Function to render a page
   function renderPage(pageNumber) {
@@ -54,7 +58,7 @@
         // Set up the canvas
         const canvas = document.getElementById("pdfCanvas");
         const context = canvas.getContext("2d");
-        const viewport = page.getViewport({ scale: 1.5 });
+        const viewport = page.getViewport({ scale: 1.2 });
 
         // Set the canvas size to the PDF page size
         canvas.width = viewport.width;
@@ -66,6 +70,8 @@
           viewport: viewport,
         };
         page.render(renderContext);
+        
+        document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
       })
       .catch((error) => {
         console.error("Error rendering page:", error);
@@ -78,6 +84,7 @@
       .getDocument(pdfUrl)
       .promise.then((doc) => {
         pdfDoc = doc;
+        totalPages = doc.numPages;
         renderPage(currentPage);
       })
       .catch((error) => {
@@ -97,6 +104,16 @@
     if (pdfDoc && currentPage < pdfDoc.numPages) {
       currentPage++;
       renderPage(currentPage);
+    }
+  });
+
+  document.getElementById("goToPageBtn").addEventListener("click", () => {
+    const pageNumberInput = document.getElementById("pageNumberInput").value;
+    if (pageNumberInput >= 1 && pageNumberInput <= totalPages) {
+      currentPage = parseInt(pageNumberInput);
+      renderPage(currentPage);
+    } else {
+      alert(`Please enter a valid page number between 1 and ${totalPages}`);
     }
   });
 

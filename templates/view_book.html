@@ -51,21 +51,9 @@
         <div
           class="d-flex flex-column align-items-start justify-content-center m-2"
         >
-          <div
-            class="container-fluid d-flex align-items-start justify-content-between"
-          >
-            <div>
-              <h1>{{ book.book_name }}</h1>
-            </div>
-            <h6 class="m-3">{{ book.author }}</h6>
-            {% if rating == None %}
-            <h5 class="my-3">Rating: {{ rating }}</h5>
-            {% else %}
-            <h5 class="my-3">Rating: {{ rating }}/5</h5>
-            {% endif %}
-          </div>
+          
         </div>
-        <div class="card m-2">
+        <div class="card m-2 bg-dark text-white">
           <h3 class="card-header">Request Book</h3>
           <div class="card-body">
             {% for category, message in get_flashed_messages(with_categories =
@@ -102,11 +90,22 @@
                 href="{{ url_for('home') }}"
                 >Cancel</a
               >
-              <a class="btn btn-primary m-2" href="{{ url_for('rate_book', book_id=book.book_id) }}">Rate</a>
-              <a class="btn btn-primary m-2" href="{{ url_for('static', filename='uploads/content/'+ book.content) }}">Buy for ₹{{ book.price }}</a>
+              <a class="btn btn-primary my-2 form-control" href="{{ url_for('rate_book', book_id=book.book_id) }}">Rate</a>
+              <a class="btn btn-primary my-2 form-control" href="{{ url_for('static', filename='uploads/content/'+ book.content) }}">Buy for ₹{{ book.price }}</a>
             </form>
           </div>
         </div>
+        <div>
+            <div>
+              <h1 class="m-3">{{ book.book_name }}</h1>
+            </div>
+            <h6 class="mx-3 my-2">{{ book.author }}</h6>
+            {% if rating == None %}
+            <h6 class="mx-3 my-2">Rating: {{ rating }}</h6>
+            {% else %}
+            <h6 class="mx-3 my-2">Rating: {{ rating }}/5</h6>
+            {% endif %}
+          </div>
       </div>
     </div>
   </div>

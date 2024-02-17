@@ -20,7 +20,7 @@
             <a class="nav-link" href="{{ url_for('home_admin') }}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active border" aria-current="page" href="#"
+            <a class="nav-link active border rounded" aria-current="page" href="#"
               >Add Section</a
             >
           </li>
@@ -69,6 +69,7 @@
           <button type="submit" class="btn btn-primary form-control">
             Add
           </button>
+          <a class="btn btn-danger my-2 form-control" href="{{ url_for('home_admin') }}">Cancel</a>
         </form>
       </div>
     </div>
