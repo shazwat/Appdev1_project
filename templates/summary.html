@@ -1,0 +1,89 @@
+{% extends "base.html" %} {% block content %}
+<div class="d-flex flex-column vh-100">
+  <nav class="navbar navbar-expand-lg navbar-nav">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home_admin') }}">Kitaab</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon color-toggle"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home_admin') }}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('add_section') }}"
+              >Add Section</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for ('borrow_requests') }}"
+              >Borrow Requests</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('search_admin') }}">Search</a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link active border rounded"
+              aria-current="page"
+              href="#"
+              >Stats</a
+            >
+          </li>
+        </ul>
+        <form
+          class="d-flex m-2"
+          action="{{ url_for('home_admin') }}"
+          method="post"
+        >
+          <button class="btn btn-outline-danger form-control" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+  <h3 class="text-center">Report</h3>
+  <div class="d-flex justify-content-center align-items-center">
+    {% if report_exists %}
+      <!-- Report Card -->
+      <div class="container-fluid">
+        
+        <div class="col col-md-6 mx-3">
+          {% for category, message in get_flashed_messages(with_categories = true) %}
+            {% if category == "error" %}
+              <div class="alert alert-danger">{{ message }}</div>
+            {% endif %}
+            {% if category == "success" %}
+              <div class="alert alert-success">{{ message }}</div>
+            {% endif %}
+          {% endfor %}
+          <!-- First Image -->
+          <img class="container-fluid m-4" src="{{ url_for('static', filename='reports/summary_graph.png' ) }}">
+        </div>
+        <!-- Second Image in a New Row -->
+        <div class="row">
+          <div class="col col-md-6 mx-3">
+            <img class="container-fluid m-4" src="{{ url_for('static', filename='reports/pie_graph.png' ) }}">
+          </div>
+        </div>
+      </div>
+      
+    {% else %}
+      <!-- No Data Message -->
+      <h1 class="text-center m-2">No bookings data to generate report</h1>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

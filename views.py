@@ -10,7 +10,8 @@ from models import *
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, redirect, render_template, request, url_for
-from email_validator import validate_email, EmailNotValidError
+# from email_validator import validate_email, EmailNotValidError
+import matplotlib.pyplot as plt
 
 app = create_app()
 
@@ -25,6 +26,7 @@ def user_loader(user_id):
     except Exception as e:
         app.logger.error(f"An error occurred while loading user : {e}")
         return None
+
 
 @app.route('/home', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +64,7 @@ def home_admin():
     if request.method == 'POST':
         logout_user()
         return redirect(url_for('login'))
-    
+
     if request.method == 'GET':
         user = current_user
         if user.role != 'admin':
@@ -76,7 +78,7 @@ def home_admin():
             except SQLAlchemyError as e:
                 section_list = {}
                 app.logger.error(f"Error fetching sections: {str(e)}")
-                
+
             return render_template('home_admin.html', section_list=section_list)
 
 
@@ -150,23 +152,24 @@ def add_section():
             return render_template('error.html', message="Not Authorized")
         else:
             return render_template('add_section.html')
-        
+
     elif request.method == 'POST':
         if not request.form['section_name'] or not request.form['description']:
             flash('Please enter all the fields', 'error')
             return render_template('add_section.html')
-        
+
         try:
-            section = db.session.scalars(db.select(Section).where(Section.section_name == request.form['section_name'])).one()
+            section = db.session.scalars(db.select(Section).where(
+                Section.section_name == request.form['section_name'])).one()
 
             flash("Section already exists", 'error')
         except:
             try:
                 section = Section(
-                    section_name = request.form['section_name'],
-                    description = request.form['description'],
-                    date_created = datetime.now(timezone.utc))
-                
+                    section_name=request.form['section_name'],
+                    description=request.form['description'],
+                    date_created=datetime.now(timezone.utc))
+
                 db.session.add(section)
                 db.session.commit()
                 flash("Section was successfully added", 'success')
@@ -429,6 +432,60 @@ def search_admin():
             return render_template('error.html', message="Not Authorised")
         else:
             return render_template('search_admin.html', result=[])
+
+
+@app.route('/summary', methods=['GET'])
+@login_required
+def summary():
+    user = current_user
+    if user.role != 'admin':
+        return render_template('error.html', message="Not Authorized")
+    else:
+        books_request_section = db.session.query(Section.section_name, func.count(Borrowing.book_id).label('num_books_requested')) \
+            .join(Book, Section.section_id == Book.section_id) \
+            .join(Borrowing, Book.book_id == Borrowing.book_id) \
+            .group_by(Section.section_name).all()
+
+        books_per_section = db.session.query(Section.section_name, func.count(Book.book_id).label('num_books')) \
+            .join(Book, Section.section_id == Book.section_id) \
+            .group_by(Section.section_name) \
+            .all()
+
+        report_exists = False
+        if books_request_section:
+            sections = []
+            num_books_requested = []
+            for res in books_request_section:
+                sections.append(res[0])
+                num_books_requested.append(res[1])
+        
+        if books_per_section:
+            sec = []
+            num_of_books = []
+            for result in books_per_section:
+                sec.append(result[0])
+                num_of_books.append(result[1])
+
+        plt.figure(figsize=(8, 6))
+        plt.barh(sections, num_books_requested, edgecolor='black')
+        plt.xlim(0, max(num_books_requested) + 3)
+        plt.ylabel('Sections')
+        plt.xlabel('Number of books requested')
+        plt.title('Number of books requested per Section', fontsize=18)
+        plt.yticks(ha="right", fontsize = 8)
+        #plt.yticks(range(int(min(num_books_requested)), int(max(num_books_requested)) + 1))
+        plt.tight_layout
+        plt.savefig("./static/reports/summary_graph.png")
+
+        plt.figure(figsize=(8,6))
+        plt.pie(num_of_books, labels = sec,autopct=lambda p: '{:.0f}'.format(p * sum(num_of_books) / 100), startangle=140, wedgeprops={'edgecolor':'black', 'linewidth':1.2})
+        plt.title('Number of Books per Section', fontsize=18)
+        plt.axis('equal')
+        plt.tight_layout
+        plt.savefig("./static/reports/pie_graph.png")
+        report_exists = True
+
+    return render_template('summary.html', report_exists=report_exists)
 
 # USER CODE
 
