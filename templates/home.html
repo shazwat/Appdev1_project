@@ -94,10 +94,10 @@
     </div>
     {% endif %}
     {% if section_list %} {% for section in section_list.keys() %}
-    <div class="row mx-2 my-3">
+    <div class="card row mx-2 my-3">
       <h3 class="m-2">{{ section.section_name }}</h3>
       <h5 class="m-2">{{ section.description }}</h5> 
-      <h6 class="m-2">Date Created : {{ section.date_created.strftime('%d-%m-%Y') }}</h6>
+      
       <div class="d-flex align-items-start flex-wrap">
         <button
           class="btn btn-secondary m-2"
