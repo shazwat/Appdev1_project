@@ -1,6 +1,7 @@
 import os
 from uuid import uuid4
 from flask_login import current_user, login_required, login_user, logout_user
+from flask_restful import Resource, Api
 from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from app import create_app
@@ -9,11 +10,204 @@ from database import db
 from models import *
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, jsonify, make_response, redirect, render_template, request, url_for
 # from email_validator import validate_email, EmailNotValidError
 import matplotlib.pyplot as plt
 
 app = create_app()
+api = Api(app, prefix="/api")
+
+# API
+
+
+class Books(Resource):
+    def get(self, book_id):
+        try:
+            book = db.session.scalars(
+                db.select(Book).where(Book.book_id == book_id)).one()
+            return make_response(jsonify({"book_id": book.book_id,
+                                          "book_name": book.book_name,
+                                          "author": book.author,
+                                          "content": book.content,
+                                          "cover": book.cover,
+                                          "price": book.price,
+                                          "section": book.section.section_name}), 200)
+        except:
+            return make_response(jsonify("Book doesn't exist"), 404)
+
+    def delete(self, book_id):
+        try:
+            book = db.session.scalars(
+                db.select(Book).where(Book.book_id == book_id)).one()
+            db.session.delete(book)
+            db.session.commit()
+            return make_response(jsonify("Book successfully deleted"), 200)
+        except:
+            return make_response(jsonify("Book doesn't exist"), 404)
+
+    def put(self, book_id):
+        try:
+            book = db.session.scalars(
+                db.select(Book).where(Book.book_id == book_id)).one()
+
+            content = request.json
+
+            if 'author' in content.keys() and isinstance(content['author'], str):
+                book.author = content['author']
+
+            if 'content' in content.keys() and isinstance(content['content'], str):
+                book.content = content['content']
+
+            if 'cover' in content.keys() and isinstance(content['cover'], str):
+                book.cover = content['cover']
+
+            if 'price' in content.keys() and isinstance(content['price'], int):
+                book.price = content['price']
+
+            if 'section_id' in content.keys() and isinstance(content['section_id'], int):
+                book.section_id = content['section_id']
+
+            db.session.commit()
+
+            return make_response(jsonify({"book_id": book.book_id,
+                            "book_name": book.book_name,
+                            "author": book.author,
+                            "content": book.content,
+                            "cover": book.cover,
+                            "price": book.price,
+                            "section": book.section.section_name}), 200)
+
+        except:
+            return make_response(jsonify("Book doesn't exist"), 404)
+
+
+class Bookslist(Resource):
+    def get(self):
+        books = db.session.scalars(db.select(Book)).all()
+        books_list = {"books": []}
+        for book in books:
+            temp = {"book_id": book.book_id,
+                    "book_name": book.book_name,
+                    "author": book.author,
+                    "content": book.content,
+                    "cover": book.cover,
+                    "price": book.price,
+                    "section": book.section.section_name}
+            books_list['books'].append(temp)
+        return make_response(jsonify(books_list), 200)
+
+    def post(self):
+        payload = request.json
+        try:
+            book_name = payload['book_name']
+            author = payload['author']
+            content = payload['content']
+            cover = payload['cover']
+            price = payload['price']
+            section_id = payload['section_id']
+        except Exception:
+            return make_response(jsonify('Incomplete post data'), 401)
+
+        if not isinstance(book_name, str) or not isinstance(author, str) or not isinstance(content, str) or not isinstance(cover, str) or not isinstance(price, int) or not isinstance(section_id, int):
+            return make_response(jsonify('Invalid post data'), 401)
+        else:
+            book = Book(book_name, author, content, cover, price, section_id)
+            db.session.add(book)
+            db.session.commit()
+            return make_response(jsonify(book), 201)
+
+
+class Sections(Resource):
+    def get(self, section_id):
+        try:
+            section = db.session.scalars(db.select(Section).where(
+                Section.section_id == section_id)).one()
+            return make_response(jsonify({"section_id": section.section_id,
+                            "section_name": section.section_name,
+                            "description": section.description,
+                            "date_created": section.date_created }), 200)
+        except:
+            return make_response(jsonify("Section doesn't exist"), 404)
+
+    def delete(self, section_id):
+        try:
+            section = db.session.scalars(db.select(Section).where(
+                Section.section_id == section_id)).one()
+            db.session.delete(section)
+            db.session.commit()
+            return make_response(jsonify("Section successfully deleted"), 200)
+        except:
+            return make_response(jsonify("Section doesn't exist"), 404)
+
+    def put(self, section_id):
+        try:
+            section = db.session.scalars(db.select(Section).where(
+                Section.section_id == section_id)).one()
+
+            content = request.json
+
+            if 'description' in content.keys() and isinstance(content['description'], str):
+                section.description = content['description']
+
+            if 'date_created' in content.keys() and isinstance(content['date_created'], str):
+                section.date_created = content['date_created']
+
+            db.session.commit()
+
+            return make_response(jsonify({"section_id": section.section_id,
+                            "section_name": section.section_name,
+                            "description": section.description,
+                            "date_created": section.date_created}), 200)
+
+        except:
+            return make_response(jsonify("Section doesn't exist"), 404)
+
+
+class Sectionslist(Resource):
+    def get(self):
+        sections = db.session.scalars(db.select(Section)).all()
+        print(sections)
+        sections_list = {"sections": []}
+        for section in sections:
+            temp = {"section_id": section.section_id,
+                    "section_name": section.section_name,
+                    "description": section.description,
+                    "date_created": section.date_created}
+            sections_list['sections'].append(temp)
+        return make_response(jsonify(sections_list), 200)
+
+    def post(self):
+        payload = request.json
+        try:
+            section_name = payload['section_name']
+            description = payload['description']
+            date_created = payload['date_created']
+
+        except Exception:
+            return make_response(jsonify('Incomplete post data'), 401)
+
+        if not isinstance(section_name, str) or not isinstance(description, str) or not isinstance(date_created, str):
+            return make_response(jsonify('Invalid post data'), 401)
+        else:
+            try:
+                section = db.session.scalars(db.select(Section).where(
+                    Section.section_name == section_name)).one()
+                return make_response(jsonify("A section with that name already exists"), 409)
+            except:
+                section = Section(section_name, description, date_created)
+                db.session.add(section)
+                db.session.commit()
+                return make_response(jsonify({"section_id": section.section_id,
+                                              "section_name": section.section_name,
+                                              "description": section.description,
+                                              "date_created": section.date_created}), 201)
+
+
+api.add_resource(Sections, '/section/<int:section_id>')
+api.add_resource(Sectionslist, '/sections/')
+
+api.add_resource(Books, '/book/<int:book_id>')
+api.add_resource(Bookslist, '/books/')
 
 
 @app.login_manager.user_loader
@@ -458,7 +652,7 @@ def summary():
             for res in books_request_section:
                 sections.append(res[0])
                 num_books_requested.append(res[1])
-        
+
         if books_per_section:
             sec = []
             num_of_books = []
@@ -472,13 +666,14 @@ def summary():
         plt.ylabel('Sections')
         plt.xlabel('Number of books requested')
         plt.title('Number of books requested per Section', fontsize=18)
-        plt.yticks(ha="right", fontsize = 8)
-        #plt.yticks(range(int(min(num_books_requested)), int(max(num_books_requested)) + 1))
+        plt.yticks(ha="right", fontsize=8)
+        # plt.yticks(range(int(min(num_books_requested)), int(max(num_books_requested)) + 1))
         plt.tight_layout
         plt.savefig("./static/reports/summary_graph.png")
 
-        plt.figure(figsize=(8,6))
-        plt.pie(num_of_books, labels = sec,autopct=lambda p: '{:.0f}'.format(p * sum(num_of_books) / 100), startangle=140, wedgeprops={'edgecolor':'black', 'linewidth':1.2})
+        plt.figure(figsize=(8, 6))
+        plt.pie(num_of_books, labels=sec, autopct=lambda p: '{:.0f}'.format(
+            p * sum(num_of_books) / 100), startangle=140, wedgeprops={'edgecolor': 'black', 'linewidth': 1.2})
         plt.title('Number of Books per Section', fontsize=18)
         plt.axis('equal')
         plt.tight_layout
