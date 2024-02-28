@@ -3,13 +3,7 @@
   <nav class="navbar navbar-expand-lg navbar-nav">
     <div class="container-fluid">
       <a class="navbar-brand" href="{{ url_for('home_admin') }}"
-        ><img
-          src="/static/uploads/Kitaab_logo.svg"
-          width="30"
-          height="30"
-          class="d-inline-block align-top logo-color"
-          alt=""
-        />Kitaab</a
+        >KitaabGhar</a
       >
       <button
         class="navbar-toggler"
@@ -68,12 +62,12 @@
   {% endif %} {% if category == "success" %}
   <div class="alert alert-success">{{ message }}</div>
   {% endif %} {% endfor %}
-
+    <h1 class="m-4">Sections</h1>
   <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
     {% if section_list %} {% for section in section_list.keys() %}
     <div class="row mx-2 my-3">
       <h3 class="m-2">{{ section.section_name }}</h3>
-      <h5 class="m-2">{{ section.description }}</h5>
+      <h5 class="m-2">Description: {{ section.description }}</h5>
       <h6 class="m-2">
         Date Created : {{ section.date_created.strftime('%d-%m-%Y') }}
       </h6>

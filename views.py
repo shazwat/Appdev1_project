@@ -14,9 +14,16 @@ from flask import flash, jsonify, make_response, redirect, render_template, requ
 # from email_validator import validate_email, EmailNotValidError
 import matplotlib.pyplot as plt
 
+ALLOWED_EXTENSIONS_COVER = {'png', 'jpg', 'jpeg'}
+ALLOWED_EXTENSIONS_CONTENT = {'pdf'}
+
 app = create_app()
 api = Api(app, prefix="/api")
 
+
+def allowed_file(filename, allowed_set):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in allowed_set
 # API
 
 
@@ -70,12 +77,12 @@ class Books(Resource):
             db.session.commit()
 
             return make_response(jsonify({"book_id": book.book_id,
-                            "book_name": book.book_name,
-                            "author": book.author,
-                            "content": book.content,
-                            "cover": book.cover,
-                            "price": book.price,
-                            "section": book.section.section_name}), 200)
+                                          "book_name": book.book_name,
+                                          "author": book.author,
+                                          "content": book.content,
+                                          "cover": book.cover,
+                                          "price": book.price,
+                                          "section": book.section.section_name}), 200)
 
         except:
             return make_response(jsonify("Book doesn't exist"), 404)
@@ -123,9 +130,9 @@ class Sections(Resource):
             section = db.session.scalars(db.select(Section).where(
                 Section.section_id == section_id)).one()
             return make_response(jsonify({"section_id": section.section_id,
-                            "section_name": section.section_name,
-                            "description": section.description,
-                            "date_created": section.date_created }), 200)
+                                          "section_name": section.section_name,
+                                          "description": section.description,
+                                          "date_created": section.date_created}), 200)
         except:
             return make_response(jsonify("Section doesn't exist"), 404)
 
@@ -155,9 +162,9 @@ class Sections(Resource):
             db.session.commit()
 
             return make_response(jsonify({"section_id": section.section_id,
-                            "section_name": section.section_name,
-                            "description": section.description,
-                            "date_created": section.date_created}), 200)
+                                          "section_name": section.section_name,
+                                          "description": section.description,
+                                          "date_created": section.date_created}), 200)
 
         except:
             return make_response(jsonify("Section doesn't exist"), 404)
@@ -453,35 +460,47 @@ def add_book(section_id):
             flash('Please enter all fields', 'error')
             return render_template('add_book.html')
         if 'content' not in request.files:
-            flash('No Content Uploaded')
+            flash('No Content Uploaded', 'error')
             return render_template('add_book.html')
         if 'cover' not in request.files:
-            flash('No Cover Uploaded')
+            flash('No Cover Uploaded', 'error')
             return render_template('add_book.html')
         content = request.files['content']
         cover = request.files['cover']
         if content.filename == '':
-            flash('No file selected for content')
+            flash('No file selected for content', 'error')
             return render_template('add_book.html')
         if cover.filename == '':
-            flash('No file selected for cover')
+            flash('No file selected for cover', 'error')
             return render_template('add_book.html')
-        else:
-            content_filename = secure_filename(datetime.now().strftime(
-                '%Y%m-%d%H-%M%S-') + str(uuid4()) + os.path.splitext(content.filename)[1])
-            content.save(os.path.join(
-                app.config['UPLOAD_FOLDER_CONTENT'], content_filename))
-            cover_filename = secure_filename(datetime.now().strftime(
-                '%Y%m-%d%H-%M%S-') + str(uuid4()) + os.path.splitext(cover.filename)[1])
-            cover.save(os.path.join(
-                app.config['UPLOAD_FOLDER_COVER'], cover_filename))
+        if not allowed_file(content.filename, ALLOWED_EXTENSIONS_CONTENT):
+            print('reached content')
+            flash('Invalid File Type For Content', 'error')
+            return render_template('add_book.html')
 
-            book = Book(request.form['book_name'], request.form['author'],
-                        content_filename, cover_filename, request.form['price'], section_id)
-            db.session.add(book)
-            db.session.commit()
-            flash("Successfully added book", 'success')
-            return redirect(url_for('home_admin'))
+        if not allowed_file(cover.filename, ALLOWED_EXTENSIONS_COVER):
+            print('reached cover')
+            flash('Invalid File Type For Cover', 'error')
+            return render_template('add_book.html')
+
+        print(allowed_file(content.filename, ALLOWED_EXTENSIONS_CONTENT))
+        print(allowed_file(cover.filename, ALLOWED_EXTENSIONS_COVER))
+        print('reached else')
+        content_filename = secure_filename(datetime.now().strftime(
+            '%Y%m-%d%H-%M%S-') + str(uuid4()) + os.path.splitext(content.filename)[1])
+        content.save(os.path.join(
+            app.config['UPLOAD_FOLDER_CONTENT'], content_filename))
+        cover_filename = secure_filename(datetime.now().strftime(
+            '%Y%m-%d%H-%M%S-') + str(uuid4()) + os.path.splitext(cover.filename)[1])
+        cover.save(os.path.join(
+            app.config['UPLOAD_FOLDER_COVER'], cover_filename))
+
+        book = Book(request.form['book_name'], request.form['author'],
+                    content_filename, cover_filename, request.form['price'], section_id)
+        db.session.add(book)
+        db.session.commit()
+        flash("Successfully added book", 'success')
+        return redirect(url_for('home_admin'))
 
 
 @app.route('/edit_book/<book_id>', methods=['GET', 'POST'])
@@ -716,9 +735,19 @@ def view_book(book_id):
             flag = 'OK'
             rating = db.session.scalars(db.select(
                 func.avg(Rating.rating)).where(Rating.book_id == book_id)).one()
+
             try:
                 borrowing = db.session.scalars(db.select(Borrowing).where(
-                    (Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id))).one()
+                    ((Borrowing.status == 'APPROVED') | (Borrowing.status == 'PENDING')) & (Borrowing.user_id == user.user_id))).all()
+                if len(borrowing) == 5:
+                    flag = 'MAXLIMIT'
+
+            except Exception as e:
+                print(e)
+
+            try:
+                borrowing = db.session.scalars(db.select(Borrowing).where(
+                    (Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id) & (Borrowing.status == 'PENDING'))).one()
                 flag = 'REQUESTED'
 
             except Exception as e:
@@ -726,9 +755,8 @@ def view_book(book_id):
 
             try:
                 borrowing = db.session.scalars(db.select(Borrowing).where(
-                    ((Borrowing.status == 'APPROVED') | (Borrowing.status == 'PENDING')) & (Borrowing.user_id == user.user_id))).all()
-                if len(borrowing) == 5:
-                    flag = 'MAXLIMIT'
+                    (Borrowing.book_id == book_id) & (Borrowing.user_id == user.user_id) & (Borrowing.status == 'APPROVED'))).one()
+                flag = 'APPROVED'
 
             except Exception as e:
                 print(e)
@@ -790,7 +818,7 @@ def view_borrowed_book(book_id):
 @login_required
 def search():
     if request.method == 'POST':
-        search_term = request.form["search_term"]
+        search_term = request.form["search_term"].strip()
         if search_term == '':
             flash('Please type a search term', 'error')
             return render_template('search.html', result=[])

@@ -3,7 +3,7 @@
 <div class="d-flex flex-column vh-100">
   <nav class="navbar navbar-expand-lg navbar-nav">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
+      <a class="navbar-brand" href="{{ url_for('home') }}">KitaabGhar</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -68,6 +68,8 @@
               <p>Book Already Requested</p>
               {% elif flag == 'MAXLIMIT' %}
               <p>You have reached your request limit.</p>
+              {% elif flag == 'APPROVED' %}
+              <p>Book already borrowed</p>
               {% else %}
               <div class="mb-3">
                 <label for="number_of_days" class="form-label"

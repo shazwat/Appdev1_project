@@ -2,7 +2,7 @@
 <div class="d-flex flex-column vh-100">
   <nav class="navbar navbar-expand-lg navbar-nav">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('home') }}">Kitaab</a>
+      <a class="navbar-brand" href="{{ url_for('home') }}">KitaabGhar</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -45,7 +45,7 @@
   {% endif %} {% if category == "success" %}
   <div class="alert alert-success">{{ message }}</div>
   {% endif %} {% endfor %}
-
+  <h1 class="m-4">Sections</h1>
   <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap">
     {% if latest %}
     <div class="row mx-2 my-3">
@@ -94,9 +94,10 @@
     </div>
     {% endif %}
     {% if section_list %} {% for section in section_list.keys() %}
-    <div class="card row mx-2 my-3">
+    
+    <div class="d-flex flex-column align-items-start flex-grow-1 flex-wrap mx-3">
       <h3 class="m-2">{{ section.section_name }}</h3>
-      <h5 class="m-2">{{ section.description }}</h5> 
+      <h5 class="m-2">Description: {{ section.description }}</h5> 
       
       <div class="d-flex align-items-start flex-wrap">
         <button
