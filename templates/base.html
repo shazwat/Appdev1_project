@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark" id="root">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,42 +11,21 @@
       crossorigin="anonymous"
     />
     <style>
-      /* Custom styles for the dark mode */
-      body.dark-mode {
-        background-color: #333;
-        color: #fff;
-      }
-      .text-white {
-        color: #fff;
-      }
-      .navbar-toggler-icon.inverted {
-        filter: invert(1);
-      }
-      .mode-switch {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        border-bottom: 1px solid #ccc;
-        padding: 10px 0;
-        z-index: 9999;
-      }
-      .same-height{
-        height:250px;
+      .same-height {
+        height: 250px;
         object-fit: scale-down;
-      }
-      .logo-color{
-        filter: invert(63%) sepia(95%) saturate(439%) hue-rotate(354deg) brightness(97%) contrast(86%);
       }
     </style>
   </head>
 
   <body>
-    <div class="m-2">
-      <div class="form-check form-switch">
-        <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
-        <input class="form-check-input" type="checkbox" id="darkModeToggle" />
-      </div>
+    <div class="my-2 mx-3 text-end">
+      <input
+        class="btn btn-secondary"
+        type="button"
+        value="Toggle Dark Mode"
+        onclick="toggleDarkMode();"
+      />
     </div>
 
     <!-- Bootstrap JS and jQuery (required for Bootstrap JS) -->
@@ -56,47 +35,17 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-      // Function to toggle dark mode
+      document.querySelector("#root").dataset.bsTheme =
+        sessionStorage.getItem("theme");
       function toggleDarkMode() {
-        var body = document.body;
-        var navbarLinks = document.querySelectorAll(".navbar-nav .nav-link");
-        var navbarBrand = document.querySelector(".navbar-brand");
-        var navbarTogglerIcon = document.querySelector(".navbar-toggler-icon");
+        console.log("executed");
 
-        // Toggle dark mode class on body
-        body.classList.toggle("dark-mode");
+        let element = document.querySelector("#root");
+        let theme = element.dataset.bsTheme;
 
-        // Toggle text color of navbar links
-        navbarLinks.forEach(function (link) {
-          link.classList.toggle("text-white");
-        });
-        navbarBrand.classList.toggle("text-white");
-        navbarTogglerIcon.classList.toggle("inverted");
-        localStorage.setItem(
-          "darkModeEnabled",
-          body.classList.contains("dark-mode")
-        );
-
-        // Update dark mode toggle switch state
-        darkModeToggle.checked = body.classList.contains("dark-mode");
+        element.dataset.bsTheme = theme === "dark" ? "light" : "dark";
+        sessionStorage.setItem("theme", element.dataset.bsTheme);
       }
-      function applyDarkMode() {
-        var darkModeEnabled = localStorage.getItem("darkModeEnabled");
-
-        if (darkModeEnabled && darkModeEnabled === "true") {
-          toggleDarkMode();
-        }
-      }
-
-      // Event listener for dark mode toggle switch
-      document
-        .getElementById("darkModeToggle")
-        .addEventListener("change", function () {
-          toggleDarkMode();
-        });
-      window.addEventListener("load", function () {
-        applyDarkMode();
-      });
     </script>
     {% block content %} {% endblock %}
     <script
@@ -104,6 +53,5 @@
       integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
       crossorigin="anonymous"
     ></script>
-    
   </body>
 </html>

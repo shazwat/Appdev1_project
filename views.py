@@ -241,7 +241,7 @@ def home():
             return render_template('error.html', message="Not Authorised")
         else:
             section_list = {}
-            latest_books = {}
+            latest_books = []
             try:
                 sections = db.session.query(Section).all()
                 for s in sections:
@@ -250,7 +250,7 @@ def home():
                 section_list = {}
                 print("Error loading sections and books: ", e)
             try:
-                latest = db.session.query(Book).order_by(
+                latest_books = db.session.query(Book).order_by(
                     Book.book_id.desc()).limit(5).all()
             except SQLAlchemyError as e:
                 latest_books = []
