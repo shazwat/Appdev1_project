@@ -612,7 +612,7 @@ def borrow_requests_status(borrowing_id, status):
 @login_required
 def search_admin():
     if request.method == 'POST':
-        search_term = request.form["search_term"]
+        search_term = request.form["search_term"].strip()
         if search_term == '':
             flash('Please type a search term', 'error')
             return render_template('search_admin.html', result=[])
