@@ -9,14 +9,13 @@ class User(db.Model):
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     authenticated = db.Column(db.Boolean, default=False)
-    premium = db.Column(db.Boolean)
 
-    def __init__(self, user_name, role, email, password, premium=False):
+    def __init__(self, user_name, role, email, password):
         self.user_name = user_name
         self.role = role
         self.email = email
         self.password = password
-        self.premium = premium
+        
 
     def is_active(self):
         return True
